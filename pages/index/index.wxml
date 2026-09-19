@@ -1,0 +1,27 @@
+<view class="container">
+  <view class="header">
+    <text class="title">原图下载</text>
+    <text class="subtitle">粘贴图片链接，获取高清原图</text>
+  </view>
+
+  <view class="input-section">
+    <input 
+      class="url-input" 
+      placeholder="请输入图片URL" 
+      value="{{imageUrl}}"
+      bindinput="onUrlInput"
+    />
+  </view>
+
+  <view class="button-section">
+    <button class="btn btn-preview" bindtap="previewImage">预览图片</button>
+    <button class="btn btn-download" bindtap="downloadImage" loading="{{loading}}">保存到相册</button>
+  </view>
+
+  <view class="tips">
+    <text class="tips-title">使用说明：</text>
+    <text class="tips-item">1. 复制图片链接</text>
+    <text class="tips-item">2. 粘贴到输入框</text>
+    <text class="tips-item">3. 点击预览或保存</text>
+  </view>
+</view>
