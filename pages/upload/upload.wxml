@@ -1,0 +1,49 @@
+<view class="container">
+  <!-- 图片选择区 -->
+  <view class="upload-area" bindtap="chooseImage">
+    <view class="preview-wrapper" wx:if="{{previewUrl}}" style="padding-bottom: {{imageInfo.ratio}}%;">
+      <image class="preview-image" src="{{previewUrl}}" mode="aspectFit" bindtap="previewImage" />
+    </view>
+    <view class="upload-placeholder" wx:else>
+      <text class="upload-icon">+</text>
+      <text class="upload-text">选择图片</text>
+      <text class="upload-hint">宽高需大于500px</text>
+    </view>
+  </view>
+
+  <!-- 图片信息 -->
+  <view class="info-section" wx:if="{{imageInfo}}">
+    <text class="info-text">尺寸：{{imageInfo.width}} × {{imageInfo.height}}</text>
+  </view>
+
+  <!-- 表单 -->
+  <view class="form-section">
+    <view class="form-item">
+      <text class="form-label">标题</text>
+      <input class="form-input" placeholder="请输入标题" value="{{title}}" bindinput="onTitleInput" />
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">分类</text>
+      <picker class="form-picker" range="{{categories}}" bindchange="onCategoryChange">
+        <text class="picker-text {{category ? '' : 'placeholder'}}">{{category || '请选择分类'}}</text>
+        <text class="picker-arrow">></text>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">标签</text>
+      <input class="form-input" placeholder="多个标签用逗号分隔" value="{{tags}}" bindinput="onTagsInput" />
+    </view>
+  </view>
+
+  <!-- 上传按钮 -->
+  <view class="submit-section">
+    <view class="submit-btn {{uploading ? 'disabled' : ''}}" bindtap="uploadImage">
+      {{uploading ? uploadProgress : '上传图片'}}
+    </view>
+  </view>
+
+  <!-- 隐藏canvas用于生成缩略图 -->
+  <canvas type="2d" id="thumbnailCanvas" class="hidden-canvas"></canvas>
+</view>

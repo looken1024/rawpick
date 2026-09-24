@@ -1,12 +1,45 @@
 {
   "pages": [
-    "pages/index/index"
+    "pages/index/index",
+    "pages/detail/detail",
+    "pages/upload/upload",
+    "pages/my/my",
+    "pages/review/review",
+    "pages/creative/creative",
+    "pages/search/search"
   ],
   "window": {
     "navigationBarBackgroundColor": "#ffffff",
-    "navigationBarTitleText": "原图下载",
+    "navigationBarTitleText": "rawpick",
     "navigationBarTextStyle": "black",
-    "backgroundTextStyle": "light"
+    "backgroundTextStyle": "light",
+    "navigationStyle": "custom"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#1296db",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "图集",
+        "iconPath": "icons/home.png",
+        "selectedIconPath": "icons/home-active.png"
+      },
+      {
+        "pagePath": "pages/creative/creative",
+        "text": "创意",
+        "iconPath": "icons/creative.png",
+        "selectedIconPath": "icons/creative-active.png"
+      },
+      {
+        "pagePath": "pages/my/my",
+        "text": "我的",
+        "iconPath": "icons/user.png",
+        "selectedIconPath": "icons/user-active.png"
+      }
+    ]
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json"

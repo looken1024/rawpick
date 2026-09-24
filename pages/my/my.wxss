@@ -1,0 +1,159 @@
+page {
+  background: #f5f5f5;
+}
+
+.container {
+  min-height: 100vh;
+  padding: 20rpx;
+  box-sizing: border-box;
+}
+
+/* 用户信息区 */
+.user-section {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 40rpx 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-wrapper {
+  margin-right: 30rpx;
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+}
+
+.user-detail {
+  flex: 1;
+}
+
+.nickname-text {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.nickname-text.placeholder {
+  color: #666;
+  font-weight: normal;
+}
+
+/* 统计数据 */
+.stats-section {
+  display: flex;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 功能菜单 */
+.menu-section {
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+}
+
+.menu-icon {
+  width: 48rpx;
+  height: 48rpx;
+  background: #07c160;
+  color: #fff;
+  font-size: 36rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8rpx;
+  margin-right: 20rpx;
+}
+
+.menu-icon-img {
+  width: 48rpx;
+  height: 48rpx;
+  margin-right: 20rpx;
+}
+
+.review-icon {
+  background: #ff4d4f;
+}
+
+.menu-text {
+  flex: 1;
+  font-size: 30rpx;
+  color: #333;
+}
+
+.menu-arrow {
+  font-size: 28rpx;
+  color: #ccc;
+}
+
+/* 退出登录 */
+.btn-section {
+  margin-top: 40rpx;
+}
+
+.login-btn {
+  width: 100% !important;
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  color: #07c160;
+  background: #fff;
+  border: 2rpx solid #07c160;
+  border-radius: 16rpx;
+}
+
+.login-btn::after {
+  border: none;
+}
+
+.logout-btn {
+  width: 100%;
+  height: 96rpx;
+  line-height: 96rpx;
+  text-align: center;
+  font-size: 32rpx;
+  color: #ff4d4f;
+  background: #fff;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+}

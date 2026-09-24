@@ -1,0 +1,54 @@
+<view class="container">
+  <!-- 顶部搜索栏 - 与胶囊按钮居中对齐 -->
+  <view class="search-header" style="padding-top: {{menuButtonTop}}px; padding-right: {{headerPaddingRight}}; padding-bottom: 10px;">
+    <view class="back-btn" bindtap="goBack">
+      <text class="back-icon">←</text>
+    </view>
+    <view class="search-input-wrapper">
+      <input class="search-input" placeholder="搜索图片" value="{{keyword}}" bindinput="onInput" bindconfirm="onSearch" focus="{{true}}" />
+      <view class="clear-btn" wx:if="{{keyword}}" bindtap="clearKeyword">×</view>
+    </view>
+  </view>
+
+  <!-- 分类快捷入口 -->
+  <view class="section">
+    <text class="section-title">分类</text>
+    <view class="category-grid">
+      <view class="category-item" wx:for="{{categories}}" wx:key="*this" data-category="{{item}}" data-id="{{index + 1}}" bindtap="onCategoryTap">
+        <text>{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 热门搜索 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">热门搜索</text>
+      <view class="refresh-btn" bindtap="refreshHotSearch">
+        <text class="refresh-icon">↻</text>
+        <text class="refresh-text">换一换</text>
+      </view>
+    </view>
+    <view class="hot-list">
+      <view class="hot-item" wx:for="{{hotSearchList}}" wx:key="*this" data-keyword="{{item}}" bindtap="onHotTap">
+        <text class="hot-index {{index < 3 ? 'top' : ''}}">{{index + 1}}</text>
+        <text class="hot-text">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 搜索历史 -->
+  <view class="section" wx:if="{{searchHistory.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">搜索历史</text>
+      <view class="clear-history-btn" bindtap="clearHistory">
+        <text class="clear-text">清空</text>
+      </view>
+    </view>
+    <view class="history-list">
+      <view class="history-item" wx:for="{{searchHistory}}" wx:key="*this" data-keyword="{{item}}" bindtap="onHistoryTap">
+        <text>{{item}}</text>
+      </view>
+    </view>
+  </view>
+</view>

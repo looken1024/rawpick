@@ -1,27 +1,100 @@
 <view class="container">
-  <view class="header">
-    <text class="title">原图下载</text>
-    <text class="subtitle">粘贴图片链接，获取高清原图</text>
+  <!-- 自定义导航栏 -->
+  <view class="nav-bar" style="height: {{statusBarHeight + 49}}px;">
+    <view class="nav-content" style="top: {{statusBarHeight}}px;">
+      <view class="share-btn" bindtap="onShareTap">
+        <image class="share-icon" src="/icons/share.png" mode="aspectFit" />
+      </view>
+      <view class="search-bar" style="max-width: {{searchMaxWidth}};" bindtap="goToSearch">
+        <text class="search-placeholder">搜索图片</text>
+      </view>
+    </view>
+  </view>
+  <view class="nav-placeholder" style="height: {{statusBarHeight + 49}}px;"></view>
+
+  <!-- 分类Tab + 设置图标 -->
+  <view class="category-wrapper">
+    <scroll-view class="category-scroll" scroll-x enable-flex>
+      <view class="category-item {{currentCategoryId === index ? 'active' : ''}}" wx:for="{{categories}}" wx:key="*this" data-id="{{index}}" bindtap="onCategoryTap">
+        {{item}}
+      </view>
+    </scroll-view>
+    <view class="settings-btn" bindtap="onSettingsTap">
+      <image class="settings-icon" src="/images/more.png" mode="aspectFit" />
+    </view>
   </view>
 
-  <view class="input-section">
-    <input 
-      class="url-input" 
-      placeholder="请输入图片URL" 
-      value="{{imageUrl}}"
-      bindinput="onUrlInput"
-    />
+  <!-- 比例选择下拉框 -->
+  <view class="dropdown-mask" wx:if="{{showDropdown}}" bindtap="onMaskTap"></view>
+  <view class="dropdown {{showDropdown ? 'show' : ''}}">
+    <view class="dropdown-title">选择图片比例</view>
+    <view class="ratio-list">
+      <view class="ratio-item {{selectedRatio === item.value ? 'active' : ''}}" wx:for="{{ratioOptions}}" wx:key="value" data-value="{{item.value}}" bindtap="onRatioTap">
+        <text>{{item.label}}</text>
+        <view class="check-icon" wx:if="{{selectedRatio === item.value}}">✓</view>
+      </view>
+    </view>
+    <view class="dropdown-btns">
+      <view class="dropdown-btn reset-btn" bindtap="onRatioReset">重置</view>
+      <view class="dropdown-btn confirm-btn" bindtap="onRatioConfirm">确定</view>
+    </view>
   </view>
 
-  <view class="button-section">
-    <button class="btn btn-preview" bindtap="previewImage">预览图片</button>
-    <button class="btn btn-download" bindtap="downloadImage" loading="{{loading}}">保存到相册</button>
+  <!-- 瀑布流图片列表 -->
+  <view class="waterfall">
+    <!-- 左列 -->
+    <view class="waterfall-column">
+      <view class="waterfall-item" wx:for="{{leftColumn}}" wx:key="_id">
+        <view class="image-wrapper" style="height: {{item.displayHeight}}px;">
+          <image 
+            class="waterfall-image {{imageLoaded[item._id] ? 'loaded' : ''}}" 
+            src="{{item.thumbnailFileID}}" 
+            mode="aspectFill" 
+            lazy-load 
+            data-id="{{item._id}}" 
+            data-thumbnailfileid="{{item.thumbnailFileID}}" 
+            data-originalfileid="{{item.originalFileID}}" 
+            data-title="{{item.title}}" 
+            data-width="{{item.width}}" 
+            data-height="{{item.height}}" 
+            data-openid="{{item._openid}}" 
+            bindload="onImageLoad" 
+            bindtap="onImageTap"
+            bindlongpress="onImageLongPress"
+          />
+          <view class="image-loading" wx:if="{{!imageLoaded[item._id]}}"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 右列 -->
+    <view class="waterfall-column">
+      <view class="waterfall-item" wx:for="{{rightColumn}}" wx:key="_id">
+        <view class="image-wrapper" style="height: {{item.displayHeight}}px;">
+          <image 
+            class="waterfall-image {{imageLoaded[item._id] ? 'loaded' : ''}}" 
+            src="{{item.thumbnailFileID}}" 
+            mode="aspectFill" 
+            lazy-load 
+            data-id="{{item._id}}" 
+            data-thumbnailfileid="{{item.thumbnailFileID}}" 
+            data-originalfileid="{{item.originalFileID}}" 
+            data-title="{{item.title}}" 
+            data-width="{{item.width}}" 
+            data-height="{{item.height}}" 
+            data-openid="{{item._openid}}" 
+            bindload="onImageLoad" 
+            bindtap="onImageTap"
+            bindlongpress="onImageLongPress"
+          />
+          <view class="image-loading" wx:if="{{!imageLoaded[item._id]}}"></view>
+        </view>
+      </view>
+    </view>
   </view>
 
-  <view class="tips">
-    <text class="tips-title">使用说明：</text>
-    <text class="tips-item">1. 复制图片链接</text>
-    <text class="tips-item">2. 粘贴到输入框</text>
-    <text class="tips-item">3. 点击预览或保存</text>
-  </view>
+  <!-- 加载提示 -->
+  <view class="loading-tip" wx:if="{{loading}}">加载中...</view>
+  <view class="loading-tip" wx:elif="{{!hasMore && images.length > 0}}">没有更多了</view>
+  <view class="loading-tip" wx:elif="{{images.length === 0 && !loading}}">暂无图片</view>
 </view>

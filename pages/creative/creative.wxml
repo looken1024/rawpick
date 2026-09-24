@@ -1,0 +1,77 @@
+<view class="container">
+  <!-- 图片选择区 -->
+  <view class="image-section">
+    <view class="image-wrapper" wx:if="{{imagePath}}">
+      <image 
+        class="preview-image {{currentFilter}}" 
+        src="{{imagePath}}" 
+        mode="aspectFill"
+        style="border-radius: {{isCircle ? '50%' : '0'}};"
+      />
+      <!-- 截取框 -->
+      <view class="crop-mask" wx:if="{{showCrop}}">
+        <view class="crop-area" style="width: {{cropSize}}px; height: {{cropSize}}px;">
+          <view class="crop-border"></view>
+        </view>
+      </view>
+    </view>
+    <view class="image-placeholder" wx:else bindtap="chooseImage">
+      <text class="placeholder-icon">+</text>
+      <text class="placeholder-text">选择图片</text>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-section" wx:if="{{imagePath}}">
+    <view class="action-row">
+      <view class="action-btn" bindtap="chooseImage">
+        <text class="btn-text">重新选择</text>
+      </view>
+      <view class="action-btn primary-btn" bindtap="saveImage">
+        <text class="btn-text">保存图片</text>
+      </view>
+      <view class="action-btn" bindtap="setAsAvatar">
+        <text class="btn-text">设为头像</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 滤镜选择 -->
+  <view class="filter-section" wx:if="{{imagePath}}">
+    <text class="section-title">滤镜效果</text>
+    <scroll-view class="filter-scroll" scroll-x>
+      <view class="filter-list">
+        <view 
+          class="filter-item {{currentFilter === item.value ? 'active' : ''}}" 
+          wx:for="{{filters}}" 
+          wx:key="value"
+          data-value="{{item.value}}"
+          bindtap="onFilterTap"
+        >
+          <view class="filter-preview {{item.value}}">
+            <view class="filter-color"></view>
+          </view>
+          <text class="filter-name">{{item.name}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 形状选择 -->
+  <view class="shape-section" wx:if="{{imagePath}}">
+    <text class="section-title">形状</text>
+    <view class="shape-list">
+      <view class="shape-item {{!isCircle ? 'active' : ''}}" bindtap="onShapeTap" data-circle="false">
+        <view class="shape-preview rect-shape"></view>
+        <text class="shape-name">方形</text>
+      </view>
+      <view class="shape-item {{isCircle ? 'active' : ''}}" bindtap="onShapeTap" data-circle="true">
+        <view class="shape-preview circle-shape"></view>
+        <text class="shape-name">圆形</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 隐藏canvas -->
+  <canvas type="2d" id="saveCanvas" class="hidden-canvas"></canvas>
+</view>

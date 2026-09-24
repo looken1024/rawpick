@@ -1,0 +1,151 @@
+page {
+  background: #f5f5f5;
+}
+
+.container {
+  min-height: 100vh;
+  padding: 20rpx;
+  box-sizing: border-box;
+}
+
+/* 图片选择区 */
+.upload-area {
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.preview-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.preview-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.upload-placeholder {
+  height: 400rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+}
+
+.upload-icon {
+  font-size: 80rpx;
+  color: #ccc;
+  margin-bottom: 16rpx;
+}
+
+.upload-text {
+  font-size: 30rpx;
+  color: #999;
+  margin-bottom: 8rpx;
+}
+
+.upload-hint {
+  font-size: 24rpx;
+  color: #ccc;
+}
+
+/* 图片信息 */
+.info-section {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.info-text {
+  font-size: 26rpx;
+  color: #666;
+}
+
+/* 表单 */
+.form-section {
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  margin-bottom: 40rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.form-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.form-item:last-child {
+  border-bottom: none;
+}
+
+.form-label {
+  width: 120rpx;
+  font-size: 30rpx;
+  color: #333;
+}
+
+.form-input {
+  flex: 1;
+  font-size: 28rpx;
+}
+
+.form-picker {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.picker-text {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.picker-text.placeholder {
+  color: #999;
+}
+
+.picker-arrow {
+  font-size: 24rpx;
+  color: #ccc;
+}
+
+/* 提交按钮 */
+.submit-section {
+  padding: 0 20rpx;
+}
+
+.submit-btn {
+  width: 100%;
+  height: 96rpx;
+  line-height: 96rpx;
+  text-align: center;
+  font-size: 34rpx;
+  color: #fff;
+  background: #07c160;
+  border-radius: 48rpx;
+}
+
+.submit-btn.disabled {
+  background: #ccc;
+}
+
+.hidden-canvas {
+  position: fixed;
+  left: -9999rpx;
+  top: -9999rpx;
+  width: 400px;
+  height: 400px;
+}
