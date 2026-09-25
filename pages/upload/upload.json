@@ -1,4 +1,5 @@
 {
   "usingComponents": {},
-  "navigationBarTitleText": "上传图片"
+  "navigationBarTitleText": "上传图片",
+  "navigationStyle": "default"
 }

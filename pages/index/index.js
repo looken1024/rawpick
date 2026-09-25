@@ -1,49 +1,56 @@
 const db = wx.cloud.database()
 const _ = db.command
+const BASE_CATEGORIES = require('../../utils/categories.js')
 
 Page({
   data: {
-    categories: ['全部', '风景', '美女', '动漫', '美食', '宠物', '建筑', '壁纸'],
+    categories: ['全部', ...BASE_CATEGORIES],
     currentCategoryId: 0,
-    leftColumn: [],
-    rightColumn: [],
+    columns: [[], [], [], []],
     searchKeyword: '',
     imageLoaded: {},
     showDropdown: false,
-    selectedRatio: 'other',
-    currentRatio: 'other',
+    selectedRatio: 'all',
+    currentRatio: 'all',
     ratioOptions: [
+      { label: '全部', value: 'all' },
       { label: '16:9', value: '16:9' },
       { label: '9:16', value: '9:16' },
       { label: '1:1', value: '1:1' },
       { label: '4:3', value: '4:3' },
-      { label: '3:4', value: '3:4' },
-      { label: '其他', value: 'other' }
+      { label: '3:4', value: '3:4' }
     ],
     images: [],
     loading: false,
     hasMore: true,
     isAdmin: false,
     statusBarHeight: 20,
-    searchMaxWidth: ''
+    searchMaxWidth: '',
+    scrollHeight: '',
+    refreshing: false
   },
 
   onLoad() {
-    const systemInfo = wx.getSystemInfoSync()
+    const windowInfo = wx.getWindowInfo()
     const menuButton = wx.getMenuButtonBoundingClientRect()
     // 搜索框最大宽度 = 屏幕宽度 - 左侧padding - 分享按钮宽度 - 间距 - 胶囊按钮宽度 - 右侧间距
-    const maxWidth = systemInfo.windowWidth - 20 - 30 - 16 - menuButton.width - 10
+    const maxWidth = windowInfo.windowWidth - 20 - 30 - 16 - menuButton.width - 10
+    // 列表高度 = 窗口高度 - 状态栏 - 导航(44px) - 分类tab(44px) - 间距(8px)
+    const scrollHeight = (windowInfo.windowHeight - windowInfo.statusBarHeight - 96)
     this.setData({
-      statusBarHeight: systemInfo.statusBarHeight || 20,
-      searchMaxWidth: maxWidth + 'px'
+      statusBarHeight: windowInfo.statusBarHeight || 20,
+      searchMaxWidth: maxWidth + 'px',
+      scrollHeight: scrollHeight + 'px'
     })
     this.checkAdmin()
     this.loadImages()
   },
 
   onShow() {
-    if (this.data.images.length > 0) {
-      this.setData({ images: [], hasMore: true })
+    if (getApp().globalData.needRefreshList) {
+      getApp().globalData.needRefreshList = false
+      this.loadImages(true)
+    } else if (this.data.images.length === 0 && this.data.searchKeyword) {
       this.loadImages()
     }
   },
@@ -60,9 +67,9 @@ Page({
   },
 
   onPullDownRefresh() {
-    this.setData({ images: [], hasMore: true })
-    this.loadImages().then(() => {
-      wx.stopPullDownRefresh()
+    this.setData({ refreshing: true })
+    this.loadImages(true).then(() => {
+      this.setData({ refreshing: false })
     })
   },
 
@@ -72,23 +79,43 @@ Page({
     }
   },
 
+  // 内容不足一屏时自动补页（scrolltolower 无法触发的情况）
+  checkFillMore() {
+    if (this.data.loading || !this.data.hasMore) return
+
+    const query = wx.createSelectorQuery()
+    query.select('.list-scroll')
+      .fields({ size: true, scrollOffset: true })
+      .exec((res) => {
+        if (!res[0]) return
+        const scrollHeight = res[0].scrollHeight || 0
+        const viewportHeight = res[0].height || 0
+        if (scrollHeight <= viewportHeight + 50) {
+          this.loadImages()
+        }
+      })
+  },
+
   // 从云数据库加载图片
-  async loadImages() {
-    if (this.data.loading) return
+  async loadImages(reset) {
+    if (this.data.loading && !reset) return
     this.setData({ loading: true })
 
     try {
       const categoryId = this.data.currentCategoryId
       const keyword = this.data.searchKeyword.trim()
       const pageSize = 20
-      const skip = this.data.images.length
+      const skip = reset ? 0 : this.data.images.length
 
-      let query = db.collection('images').where({ status: 1 })
+      let query = db.collection('images')
 
-      // 分类筛选
+      // 分类筛选：优先匹配 categories 数组（多选），兼容旧 category 字符串
       if (categoryId !== 0) {
         const category = this.data.categories[categoryId]
-        query = query.where({ category: category })
+        query = query.where(_.or([
+          { categories: category },
+          { category: category }
+        ]))
       }
 
       // 关键词搜索
@@ -106,7 +133,7 @@ Page({
         .get()
 
       const newImages = res.data
-      const allImages = [...this.data.images, ...newImages]
+      const allImages = reset ? newImages : [...this.data.images, ...newImages]
 
       this.setData({
         images: allImages,
@@ -115,6 +142,11 @@ Page({
       })
 
       this.renderWaterfall(allImages)
+
+      // 若内容不足一屏，自动继续加载下一页
+      if (newImages.length === pageSize) {
+        setTimeout(() => this.checkFillMore(), 300)
+      }
     } catch (err) {
       console.error('加载失败:', err)
       this.setData({ loading: false })
@@ -123,18 +155,16 @@ Page({
 
   // 渲染瀑布流
   renderWaterfall(images) {
-    const leftColumn = []
-    const rightColumn = []
-    let leftHeight = 0
-    let rightHeight = 0
+    const columns = [[], [], [], []]
+    const columnHeights = [0, 0, 0, 0]
 
-    const screenWidth = wx.getSystemInfoSync().windowWidth
-    const columnWidth = (screenWidth - 30) / 2
+    const screenWidth = wx.getWindowInfo().windowWidth
+    const columnWidth = (screenWidth - 30) / 4
     const currentRatio = this.data.currentRatio
 
     // 根据比例筛选图片
     let filteredImages = images
-    if (currentRatio !== 'other') {
+    if (currentRatio !== 'all') {
       const [targetW, targetH] = currentRatio.split(':').map(Number)
       const targetRatio = targetW / targetH
       const tolerance = 0.1
@@ -151,19 +181,18 @@ Page({
       const ratio = item.height / item.width
       const imageHeight = columnWidth * ratio
 
-      if (leftHeight <= rightHeight) {
-        leftColumn.push({ ...item, displayHeight: imageHeight })
-        leftHeight += imageHeight + 10
-      } else {
-        rightColumn.push({ ...item, displayHeight: imageHeight })
-        rightHeight += imageHeight + 10
+      // 找出最短列
+      let shortest = 0
+      for (let i = 1; i < 4; i++) {
+        if (columnHeights[i] < columnHeights[shortest]) {
+          shortest = i
+        }
       }
+      columns[shortest].push({ ...item, displayHeight: imageHeight })
+      columnHeights[shortest] += imageHeight + 10
     })
 
-    this.setData({
-      leftColumn,
-      rightColumn
-    })
+    this.setData({ columns })
   },
 
   // 分类切换
@@ -177,13 +206,9 @@ Page({
     this.loadImages()
   },
 
-  // 分享
+  // 分享（暂未开放）
   onShareTap() {
-    // 触发分享菜单
-    wx.showShareMenu({
-      withShareTicket: true,
-      menus: ['shareAppMessage', 'shareTimeline']
-    })
+    wx.showToast({ title: '分享功能暂未开放', icon: 'none' })
   },
 
   // 转发给朋友
@@ -211,6 +236,14 @@ Page({
     })
   },
 
+  // 跳转上传页（仅管理员）
+  goToUpload() {
+    if (!this.data.isAdmin) return
+    wx.navigateTo({
+      url: '/pages/upload/upload'
+    })
+  },
+
   // 设置
   onSettingsTap() {
     this.setData({ showDropdown: !this.data.showDropdown })
@@ -226,7 +259,7 @@ Page({
   },
 
   onRatioReset() {
-    this.setData({ selectedRatio: 'other' })
+    this.setData({ selectedRatio: 'all' })
   },
 
   onRatioConfirm() {

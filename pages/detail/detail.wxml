@@ -1,11 +1,17 @@
 <view class="container">
+  <!-- 加载中 -->
+  <view class="page-loading" wx:if="{{pageLoading}}">
+    <view class="loading-spinner"></view>
+    <text>加载中...</text>
+  </view>
+
   <!-- 缩略图预览 -->
-  <view class="image-preview">
+  <view class="image-preview" wx:else>
     <image class="preview-image" src="{{imageInfo.thumbnail}}" mode="aspectFit" />
   </view>
 
   <!-- 图片信息 -->
-  <view class="info-section">
+  <view class="info-section" wx:if="{{!pageLoading}}">
     <view class="info-title">图片信息</view>
     <view class="info-item">
       <text class="info-label">名称</text>
@@ -22,14 +28,24 @@
   </view>
 
   <!-- 操作按钮 -->
-  <view class="action-section">
+  <view class="action-section" wx:if="{{!pageLoading}}">
     <view class="action-btn preview-btn" bindtap="previewImage">预览原图</view>
     <view class="action-btn download-btn" bindtap="saveToAlbum" loading="{{loading}}">免费下载</view>
   </view>
 
   <!-- 原图预览蒙层 -->
   <view class="original-mask" wx:if="{{showOriginal}}" bindtap="closeOriginal">
-    <image class="original-image" src="{{imageInfo.original}}" mode="aspectFit" catchtap="preventTap" />
-    <view class="close-btn" catchtap="closeOriginal">×</view>
+    <image class="original-image" src="{{imageInfo.original}}" mode="aspectFit" />
+  </view>
+
+  <!-- 下载进度蒙层 -->
+  <view class="download-mask" wx:if="{{showDownloadMask}}">
+    <view class="download-box">
+      <text class="download-title">正在下载...</text>
+      <view class="progress-track">
+        <view class="progress-bar" style="width: {{downloadProgress}}%;"></view>
+      </view>
+      <text class="download-percent">{{downloadProgress}}%</text>
+    </view>
   </view>
 </view>

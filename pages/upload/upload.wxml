@@ -1,19 +1,32 @@
 <view class="container">
   <!-- 图片选择区 -->
-  <view class="upload-area" bindtap="chooseImage">
-    <view class="preview-wrapper" wx:if="{{previewUrl}}" style="padding-bottom: {{imageInfo.ratio}}%;">
-      <image class="preview-image" src="{{previewUrl}}" mode="aspectFit" bindtap="previewImage" />
+  <view class="upload-area">
+    <!-- 多图预览，左右滑动切换 -->
+    <view class="preview-section" wx:if="{{selectedImages.length > 0}}">
+      <swiper class="preview-swiper" indicator-dots current="{{currentIndex}}" bindchange="onSwiperChange">
+        <swiper-item wx:for="{{selectedImages}}" wx:key="index">
+          <view class="preview-frame">
+            <image class="preview-image" src="{{item.tempFilePath}}" mode="aspectFit" bindtap="previewImage" />
+            <view class="image-id-bar" wx:if="{{item.id}}">
+              <text class="image-id" user-select>{{item.id}}</text>
+              <view class="copy-btn" data-id="{{item.id}}" bindtap="copyId">复制</view>
+            </view>
+          </view>
+        </swiper-item>
+      </swiper>
+      <view class="remove-current" catchtap="removeCurrent">删除当前</view>
+      <view class="re-select" bindtap="chooseImage">重新选择 / 继续添加</view>
     </view>
-    <view class="upload-placeholder" wx:else>
+    <view class="upload-placeholder" wx:else bindtap="chooseImage">
       <text class="upload-icon">+</text>
       <text class="upload-text">选择图片</text>
-      <text class="upload-hint">宽高需大于500px</text>
+      <text class="upload-hint">宽高需大于500px，最多9张</text>
     </view>
   </view>
 
   <!-- 图片信息 -->
-  <view class="info-section" wx:if="{{imageInfo}}">
-    <text class="info-text">尺寸：{{imageInfo.width}} × {{imageInfo.height}}</text>
+  <view class="info-section" wx:if="{{selectedImages.length > 0}}">
+    <text class="info-text">共 {{selectedImages.length}} 张，当前第 {{currentIndex + 1}} 张：{{selectedImages[currentIndex].width}} × {{selectedImages[currentIndex].height}}</text>
   </view>
 
   <!-- 表单 -->
@@ -23,24 +36,37 @@
       <input class="form-input" placeholder="请输入标题" value="{{title}}" bindinput="onTitleInput" />
     </view>
 
-    <view class="form-item">
-      <text class="form-label">分类</text>
-      <picker class="form-picker" range="{{categories}}" bindchange="onCategoryChange">
-        <text class="picker-text {{category ? '' : 'placeholder'}}">{{category || '请选择分类'}}</text>
-        <text class="picker-arrow">></text>
-      </picker>
+    <view class="form-item form-item-column">
+      <text class="form-label">分类（可多选）</text>
+      <view class="category-chip-grid">
+        <view class="category-chip {{item.selected ? 'active' : ''}}" wx:for="{{categories}}" wx:key="name" data-category="{{item.name}}" bindtap="onCategoryToggle">
+          {{item.name}}
+        </view>
+      </view>
     </view>
 
     <view class="form-item">
       <text class="form-label">标签</text>
       <input class="form-input" placeholder="多个标签用逗号分隔" value="{{tags}}" bindinput="onTagsInput" />
     </view>
+
+    <view class="form-hint" wx:if="{{selectedImages.length > 1}}">
+      <text>标题与标签将应用到所有选中的 {{selectedImages.length}} 张图片</text>
+    </view>
   </view>
 
   <!-- 上传按钮 -->
-  <view class="submit-section">
+  <view class="submit-section" wx:if="{{!uploaded}}">
     <view class="submit-btn {{uploading ? 'disabled' : ''}}" bindtap="uploadImage">
       {{uploading ? uploadProgress : '上传图片'}}
+    </view>
+  </view>
+
+  <!-- 上传完成操作 -->
+  <view class="result-section" wx:if="{{uploaded}}">
+    <view class="result-actions">
+      <view class="copy-all" bindtap="copyAllIds">复制全部ID</view>
+      <view class="done-btn" bindtap="finishUpload">完成</view>
     </view>
   </view>
 

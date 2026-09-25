@@ -2,24 +2,26 @@ Page({
   data: {
     keyword: '',
     statusBarHeight: 20,
-    categories: ['风景', '美女', '动漫', '美食', '宠物', '建筑', '壁纸'],
+    categories: [],
     hotSearchList: [],
     searchHistory: [],
     allHotKeywords: [
-      '风景', '美女', '动漫', '美食', '宠物', '建筑', '壁纸',
+      '风景', '美女', '动漫', '美食', '宠物', '壁纸', '表情包',
       '高清', '4K', '手机壁纸', '电脑壁纸', '风景图片', '可爱',
       '治愈', '简约', '二次元', '古风', '夜景', '海边', '山川'
     ]
   },
 
   onLoad() {
-    const systemInfo = wx.getSystemInfoSync()
+    const CATEGORIES = require('../../utils/categories.js')
+    const windowInfo = wx.getWindowInfo()
     const menuButton = wx.getMenuButtonBoundingClientRect()
-    const statusBarHeight = systemInfo.statusBarHeight || 20
+    const statusBarHeight = windowInfo.statusBarHeight || 20
     this.setData({
+      categories: CATEGORIES,
       statusBarHeight: statusBarHeight,
       menuButtonTop: menuButton.top,
-      headerPaddingRight: (systemInfo.windowWidth - menuButton.left + 4) + 'px'
+      headerPaddingRight: (windowInfo.windowWidth - menuButton.left + 4) + 'px'
     })
     this.loadSearchHistory()
     this.refreshHotSearch()

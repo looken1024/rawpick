@@ -1,50 +1,93 @@
 Page({
   data: {
-    tempFilePath: '',
-    imageInfo: null,
+    selectedImages: [],
+    currentIndex: 0,
     title: '',
-    category: '',
-    categories: ['风景', '美女', '动漫', '美食', '宠物', '建筑', '壁纸'],
+    categories: [],
     tags: '',
     uploading: false,
-    previewUrl: '',
-    uploadProgress: ''
+    uploadProgress: '',
+    uploaded: false,
+    uploadResults: []
   },
 
-  // 选择图片
+  onLoad() {
+    const CATEGORIES = require('../../utils/categories.js')
+    this.setData({
+      categories: CATEGORIES.map(name => ({ name, selected: false }))
+    })
+  },
+
+  // 选择图片（支持多选）
   chooseImage() {
+    const remain = 9 - this.data.selectedImages.length
+    if (remain <= 0) {
+      wx.showToast({ title: '最多选择9张', icon: 'none' })
+      return
+    }
     wx.chooseMedia({
-      count: 1,
+      count: remain,
       mediaType: ['image'],
       sourceType: ['album', 'camera'],
       success: (res) => {
-        const tempFilePath = res.tempFiles[0].tempFilePath
+        const newImages = []
+        let pending = res.tempFiles.length
 
-        wx.getImageInfo({
-          src: tempFilePath,
-          success: (info) => {
-            if (info.width < 500 || info.height < 500) {
-              wx.showToast({ title: '图片尺寸太小，宽高需大于500px', icon: 'none' })
-              return
-            }
-
-            this.setData({
-              tempFilePath: tempFilePath,
-              imageInfo: {
+        res.tempFiles.forEach((file) => {
+          wx.getImageInfo({
+            src: file.tempFilePath,
+            success: (info) => {
+              newImages.push({
+                tempFilePath: file.tempFilePath,
                 width: info.width,
                 height: info.height,
                 ratio: (info.height / info.width * 100).toFixed(2)
-              },
-              previewUrl: tempFilePath
-            })
-          }
+              })
+              pending--
+              if (pending === 0) {
+                this.setData({
+                  selectedImages: [...this.data.selectedImages, ...newImages]
+                })
+              }
+            },
+            fail: () => {
+              pending--
+              if (pending === 0) {
+                this.setData({
+                  selectedImages: [...this.data.selectedImages, ...newImages]
+                })
+              }
+            }
+          })
         })
       }
     })
   },
 
+  // 滑动切换
+  onSwiperChange(e) {
+    this.setData({ currentIndex: e.detail.current })
+  },
+
+  // 删除当前图片
+  removeCurrent() {
+    const index = this.data.currentIndex
+    const list = [...this.data.selectedImages]
+    list.splice(index, 1)
+    const currentIndex = list.length === 0 ? 0 : Math.min(index, list.length - 1)
+    this.setData({ selectedImages: list, currentIndex })
+  },
+
   onTitleInput(e) { this.setData({ title: e.detail.value }) },
-  onCategoryChange(e) { this.setData({ category: this.data.categories[e.detail.value] }) },
+  // 切换分类（多选）
+  onCategoryToggle(e) {
+    const cat = e.currentTarget.dataset.category
+    const index = this.data.categories.findIndex(item => item.name === cat)
+    if (index === -1) return
+
+    const key = `categories[${index}].selected`
+    this.setData({ [key]: !this.data.categories[index].selected })
+  },
   onTagsInput(e) { this.setData({ tags: e.detail.value }) },
 
   // 生成缩略图
@@ -106,75 +149,123 @@ Page({
     })
   },
 
-  // 上传图片
+  // 上传图片（逐个上传）
   async uploadImage() {
-    if (!this.data.tempFilePath) {
+    if (!this.data.selectedImages.length) {
       wx.showToast({ title: '请选择图片', icon: 'none' })
       return
     }
-    if (!this.data.category) {
+    const selectedCategories = this.data.categories.filter(item => item.selected).map(item => item.name)
+    if (!selectedCategories.length) {
       wx.showToast({ title: '请选择分类', icon: 'none' })
       return
     }
 
+    const list = this.data.selectedImages
     this.setData({ uploading: true })
+    let successCount = 0
+
+    const updatedImages = list.map(item => ({ ...item, id: '' }))
 
     try {
-      // 1. 生成缩略图
-      this.setData({ uploadProgress: '生成缩略图...' })
-      const thumbnailPath = await this.generateThumbnail(this.data.tempFilePath)
+      for (let i = 0; i < list.length; i++) {
+        const item = list[i]
 
-      // 2. 上传原图
-      this.setData({ uploadProgress: '上传原图...' })
-      const timestamp = Date.now()
-      const random = Math.random().toString(36).substr(2, 9)
+        // 1. 生成缩略图
+        this.setData({ uploadProgress: `正在上传第 ${i + 1}/${list.length} 张：生成缩略图...` })
+        const thumbnailPath = await this.generateThumbnail(item.tempFilePath)
 
-      const originalUpload = await wx.cloud.uploadFile({
-        cloudPath: `images/original/${timestamp}-${random}.jpg`,
-        filePath: this.data.tempFilePath
-      })
+        // 2. 上传原图
+        this.setData({ uploadProgress: `正在上传第 ${i + 1}/${list.length} 张：上传原图...` })
+        const timestamp = Date.now()
+        const random = Math.random().toString(36).substr(2, 9)
 
-      // 3. 上传缩略图
-      this.setData({ uploadProgress: '上传缩略图...' })
-      const thumbnailUpload = await wx.cloud.uploadFile({
-        cloudPath: `images/thumbnails/${timestamp}-${random}.jpg`,
-        filePath: thumbnailPath
-      })
+        const originalUpload = await wx.cloud.uploadFile({
+          cloudPath: `images/original/${timestamp}-${random}.jpg`,
+          filePath: item.tempFilePath
+        })
 
-      // 4. 调用云函数保存记录
-      this.setData({ uploadProgress: '保存记录...' })
-      const tagsArray = this.data.tags.split(/[,，\s]+/).filter(t => t)
+        // 3. 上传缩略图
+        this.setData({ uploadProgress: `正在上传第 ${i + 1}/${list.length} 张：上传缩略图...` })
+        const thumbnailUpload = await wx.cloud.uploadFile({
+          cloudPath: `images/thumbnails/${timestamp}-${random}.jpg`,
+          filePath: thumbnailPath
+        })
 
-      const res = await wx.cloud.callFunction({
-        name: 'uploadImage',
-        data: {
-          fileID: originalUpload.fileID,
-          thumbnailFileID: thumbnailUpload.fileID,
-          title: this.data.title || '未命名',
-          category: this.data.category,
-          tags: tagsArray,
-          width: this.data.imageInfo.width,
-          height: this.data.imageInfo.height
+        // 4. 调用云函数保存记录
+        this.setData({ uploadProgress: `正在上传第 ${i + 1}/${list.length} 张：保存记录...` })
+        const tagsArray = this.data.tags.split(/[,，\s]+/).filter(t => t)
+
+        const res = await wx.cloud.callFunction({
+          name: 'uploadImage',
+          data: {
+            fileID: originalUpload.fileID,
+            thumbnailFileID: thumbnailUpload.fileID,
+            title: this.data.title || '未命名',
+            categories: selectedCategories,
+            tags: tagsArray,
+            width: item.width,
+            height: item.height
+          }
+        })
+
+        if (res.result.code === 0) {
+          successCount++
+          updatedImages[i].id = res.result.imageId
         }
-      })
-
-      if (res.result.code === 0) {
-        wx.showToast({ title: '上传成功，等待审核', icon: 'success' })
-        setTimeout(() => wx.navigateBack(), 1500)
-      } else {
-        wx.showToast({ title: '上传失败', icon: 'none' })
       }
     } catch (err) {
       console.error('上传失败:', err)
-      wx.showToast({ title: '上传失败: ' + err.message, icon: 'none' })
-    } finally {
-      this.setData({ uploading: false, uploadProgress: '' })
+    }
+
+    this.setData({ uploading: false, uploadProgress: '', selectedImages: updatedImages })
+
+    if (successCount > 0) {
+      getApp().globalData.needRefreshList = true
+      wx.showToast({
+        title: successCount === list.length ? `上传成功 ${successCount} 张` : `成功 ${successCount} 张，失败 ${list.length - successCount} 张`,
+        icon: 'success'
+      })
+      this.setData({ uploaded: true })
+    } else {
+      wx.showToast({ title: '上传失败', icon: 'none' })
     }
   },
 
+  // 复制图片id
+  copyId(e) {
+    const id = e.currentTarget.dataset.id
+    wx.setClipboardData({
+      data: id,
+      success: () => {
+        wx.showToast({ title: '已复制', icon: 'success' })
+      }
+    })
+  },
+
+  // 复制全部ID
+  copyAllIds() {
+    const ids = this.data.selectedImages.filter(item => item.id).map(item => item.id).join('\n')
+    if (!ids) return
+    wx.setClipboardData({
+      data: ids,
+      success: () => {
+        wx.showToast({ title: '已复制全部ID', icon: 'success' })
+      }
+    })
+  },
+
+  // 完成返回
+  finishUpload() {
+    wx.navigateBack()
+  },
+
   previewImage() {
-    if (this.data.previewUrl) {
-      wx.previewImage({ urls: [this.data.previewUrl] })
+    if (this.data.selectedImages.length > 0) {
+      wx.previewImage({
+        urls: this.data.selectedImages.map(item => item.tempFilePath),
+        current: this.data.selectedImages[this.data.currentIndex].tempFilePath
+      })
     }
   }
 })

@@ -1,8 +1,8 @@
 <view class="container">
   <!-- 自定义导航栏 -->
-  <view class="nav-bar" style="height: {{statusBarHeight + 49}}px;">
-    <view class="nav-content" style="top: {{statusBarHeight}}px;">
-      <view class="share-btn" bindtap="onShareTap">
+  <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-content">
+      <view class="share-btn" wx:if="{{false}}" bindtap="onShareTap">
         <image class="share-icon" src="/icons/share.png" mode="aspectFit" />
       </view>
       <view class="search-bar" style="max-width: {{searchMaxWidth}};" bindtap="goToSearch">
@@ -10,7 +10,6 @@
       </view>
     </view>
   </view>
-  <view class="nav-placeholder" style="height: {{statusBarHeight + 49}}px;"></view>
 
   <!-- 分类Tab + 设置图标 -->
   <view class="category-wrapper">
@@ -26,7 +25,7 @@
 
   <!-- 比例选择下拉框 -->
   <view class="dropdown-mask" wx:if="{{showDropdown}}" bindtap="onMaskTap"></view>
-  <view class="dropdown {{showDropdown ? 'show' : ''}}">
+  <view class="dropdown" wx:if="{{showDropdown}}" style="top: {{statusBarHeight + 44 + 46}}px;">
     <view class="dropdown-title">选择图片比例</view>
     <view class="ratio-list">
       <view class="ratio-item {{selectedRatio === item.value ? 'active' : ''}}" wx:for="{{ratioOptions}}" wx:key="value" data-value="{{item.value}}" bindtap="onRatioTap">
@@ -40,61 +39,48 @@
     </view>
   </view>
 
-  <!-- 瀑布流图片列表 -->
-  <view class="waterfall">
-    <!-- 左列 -->
-    <view class="waterfall-column">
-      <view class="waterfall-item" wx:for="{{leftColumn}}" wx:key="_id">
-        <view class="image-wrapper" style="height: {{item.displayHeight}}px;">
-          <image 
-            class="waterfall-image {{imageLoaded[item._id] ? 'loaded' : ''}}" 
-            src="{{item.thumbnailFileID}}" 
-            mode="aspectFill" 
-            lazy-load 
-            data-id="{{item._id}}" 
-            data-thumbnailfileid="{{item.thumbnailFileID}}" 
-            data-originalfileid="{{item.originalFileID}}" 
-            data-title="{{item.title}}" 
-            data-width="{{item.width}}" 
-            data-height="{{item.height}}" 
-            data-openid="{{item._openid}}" 
-            bindload="onImageLoad" 
-            bindtap="onImageTap"
-            bindlongpress="onImageLongPress"
-          />
-          <view class="image-loading" wx:if="{{!imageLoaded[item._id]}}"></view>
+  <!-- 图片列表 -->
+  <scroll-view class="list-scroll" scroll-y refresher-enabled refresher-triggered="{{refreshing}}" refresher-default-style="none" refresher-threshold="40" style="height: {{scrollHeight}};" bindrefresherrefresh="onPullDownRefresh" bindscrolltolower="onReachBottom">
+    <view slot="refresher" class="refresher-slot">
+      <view class="refresh-spinner" wx:if="{{refreshing}}"></view>
+      <text class="refresh-text">{{refreshing ? '加载中...' : ''}}</text>
+    </view>
+
+    <view class="waterfall">
+      <!-- 4列表格 -->
+      <view class="waterfall-column" wx:for="{{columns}}" wx:key="index">
+        <view class="waterfall-item" wx:for="{{item}}" wx:for-item="img" wx:key="_id">
+          <view class="image-wrapper" style="height: {{img.displayHeight}}px;">
+            <image 
+              class="waterfall-image {{imageLoaded[img._id] ? 'loaded' : ''}}" 
+              src="{{img.thumbnailFileID}}" 
+              mode="aspectFill" 
+              lazy-load 
+              data-id="{{img._id}}" 
+              data-thumbnailfileid="{{img.thumbnailFileID}}" 
+              data-originalfileid="{{img.originalFileID}}" 
+              data-title="{{img.title}}" 
+              data-width="{{img.width}}" 
+              data-height="{{img.height}}" 
+              data-openid="{{img._openid}}" 
+              bindload="onImageLoad" 
+              bindtap="onImageTap"
+              bindlongpress="onImageLongPress"
+            />
+            <view class="image-loading" wx:if="{{!imageLoaded[img._id]}}"></view>
+          </view>
         </view>
       </view>
     </view>
 
-    <!-- 右列 -->
-    <view class="waterfall-column">
-      <view class="waterfall-item" wx:for="{{rightColumn}}" wx:key="_id">
-        <view class="image-wrapper" style="height: {{item.displayHeight}}px;">
-          <image 
-            class="waterfall-image {{imageLoaded[item._id] ? 'loaded' : ''}}" 
-            src="{{item.thumbnailFileID}}" 
-            mode="aspectFill" 
-            lazy-load 
-            data-id="{{item._id}}" 
-            data-thumbnailfileid="{{item.thumbnailFileID}}" 
-            data-originalfileid="{{item.originalFileID}}" 
-            data-title="{{item.title}}" 
-            data-width="{{item.width}}" 
-            data-height="{{item.height}}" 
-            data-openid="{{item._openid}}" 
-            bindload="onImageLoad" 
-            bindtap="onImageTap"
-            bindlongpress="onImageLongPress"
-          />
-          <view class="image-loading" wx:if="{{!imageLoaded[item._id]}}"></view>
-        </view>
-      </view>
-    </view>
+    <!-- 加载提示 -->
+    <view class="loading-tip" wx:if="{{loading && !refreshing}}">加载中...</view>
+    <view class="loading-tip" wx:elif="{{!hasMore && images.length > 0}}">没有更多了</view>
+    <view class="loading-tip" wx:elif="{{images.length === 0 && !loading && !refreshing}}">暂无图片</view>
+  </scroll-view>
+
+  <!-- 上传入口（仅管理员） -->
+  <view class="upload-fab" wx:if="{{isAdmin}}" bindtap="goToUpload">
+    <image class="upload-fab-icon" src="/icons/upload.png" mode="aspectFit" />
   </view>
-
-  <!-- 加载提示 -->
-  <view class="loading-tip" wx:if="{{loading}}">加载中...</view>
-  <view class="loading-tip" wx:elif="{{!hasMore && images.length > 0}}">没有更多了</view>
-  <view class="loading-tip" wx:elif="{{images.length === 0 && !loading}}">暂无图片</view>
 </view>

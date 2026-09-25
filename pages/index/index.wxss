@@ -1,31 +1,29 @@
 page {
-  background: #f5f5f5;
+  background: #fff;
+  height: 100%;
+  overflow: hidden;
 }
 
 .container {
-  padding: 0 20rpx 20rpx;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 0 20rpx;
 }
 
 /* 自定义导航栏 */
 .nav-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 999;
+  flex-shrink: 0;
   background: #fff;
 }
 
 .nav-content {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
   display: flex;
   align-items: center;
-  padding: 0 20rpx 0 20rpx;
-  padding-right: calc(20rpx + env(safe-area-inset-right));
+  padding: 0 20rpx;
   height: 88rpx;
+  box-sizing: border-box;
 }
 
 .nav-placeholder {
@@ -65,9 +63,17 @@ page {
 
 /* 分类Tab */
 .category-wrapper {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  margin-bottom: 20rpx;
+  background: #fff;
+  box-sizing: border-box;
+  height: 44px;
+  margin-bottom: 8px;
+}
+
+.category-placeholder {
+  display: none;
 }
 
 .category-scroll {
@@ -129,14 +135,11 @@ page {
 /* 下拉框 */
 .dropdown {
   position: fixed;
-  top: 0;
   left: 0;
   right: 0;
   background: #fff;
   z-index: 100;
   padding: 30rpx;
-  transform: translateY(-100%);
-  transition: transform 0.3s ease;
   border-radius: 0 0 24rpx 24rpx;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
 }
@@ -207,10 +210,50 @@ page {
   color: #fff;
 }
 
+/* 图片列表滚动区 */
+.list-scroll {
+  position: relative;
+  overflow: hidden;
+}
+
+/* 下拉刷新占位符（自定义样式） */
+.refresher-slot {
+  width: 100%;
+  height: 100rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 下拉刷新加载中 */
+.refresh-spinner {
+  width: 32rpx;
+  height: 32rpx;
+  border: 4rpx solid #e0e0e0;
+  border-top-color: #1296db;
+  border-radius: 50%;
+  animation: refresh-rotate 0.8s linear infinite;
+  margin-right: 16rpx;
+}
+
+@keyframes refresh-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.refresh-text {
+  font-size: 26rpx;
+  color: #999;
+}
+
 /* 瀑布流 */
 .waterfall {
   display: flex;
-  gap: 10rpx;
+  gap: 6rpx;
 }
 
 .waterfall-column {
@@ -221,9 +264,9 @@ page {
 
 .waterfall-item {
   background: #fff;
-  border-radius: 12rpx;
+  border-radius: 8rpx;
   overflow: hidden;
-  margin-bottom: 16rpx;
+  margin-bottom: 10rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 }
 
@@ -270,4 +313,25 @@ page {
   padding: 30rpx;
   color: #999;
   font-size: 26rpx;
+}
+
+/* 上传按钮（左下角悬浮） */
+.upload-fab {
+  position: fixed;
+  bottom: 60rpx;
+  left: 40rpx;
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.15);
+  z-index: 900;
+}
+
+.upload-fab-icon {
+  width: 52rpx;
+  height: 52rpx;
 }

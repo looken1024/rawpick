@@ -12,6 +12,7 @@ App({
     }
   },
   globalData: {
-    userInfo: null
+    userInfo: null,
+    needRefreshList: false
   }
 })
